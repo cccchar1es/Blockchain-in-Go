@@ -12,6 +12,7 @@ type Block struct {
 	PrevBlockHash []byte
 	Data          []byte
 	Hash          []byte
+	Nonce         int
 }
 
 // setHash is to hash the headers of the block which are the all the information in a block
@@ -21,11 +22,17 @@ func (b *Block) setHash() {
 	headers := bytes.Join([][]byte{b.PrevBlockHash, b.Data, timestamp}, []byte{})
 	hash := sha256.Sum256(headers)
 
-	b.Hash = hash[:] // [:] make the variable to be the hash value
+	b.Hash = hash[:] // [:] bytes to slice: [32]byte -> []byte
 }
 
 func NewBlock(prevBlockHash []byte, data string) *Block {
-	block := &Block{time.Now().Unix(), prevBlockHash, []byte(data), []byte{}}
-	block.setHash()
+	block := &Block{time.Now().Unix(), prevBlockHash, []byte(data), []byte{}, 0}
+	// block.setHash()
+	pow := NewProofOfWork(block)
+	nonce, hash := pow.Run()
+
+	block.Hash = hash[:]
+	block.Nonce = nonce
+
 	return block
 }
